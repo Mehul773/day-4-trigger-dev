@@ -9,7 +9,7 @@ export const aiNewsDigest = schedules.task({
   id: "ai-news-digest",
   cron: {
     pattern: "15 8 * * 1", // every Monday, 8:15am IST
-    timezone: "Asia/Kolkata",
+    timezone: "Asia/Calcutta", // Trigger.dev's supported list uses this alias, not "Asia/Kolkata"
     environments: ["PRODUCTION"],
   },
   maxDuration: 120,
