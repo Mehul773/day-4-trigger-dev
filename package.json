@@ -1,0 +1,22 @@
+{
+  "name": "day-4-trigger-dev",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@trigger.dev/sdk": "4.5.11",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "@trigger.dev/build": "4.5.11",
+    "@types/node": "^26.2.0",
+    "typescript": "^5.9.3"
+  }
+}
