@@ -13,6 +13,22 @@ export function quietDayMessage(): string {
   return "No fresh AI or tech news worth flagging turned up in the last day. Back tomorrow.";
 }
 
+function extractTldr(text: string): { tldr: string | null; rest: string } {
+  const paragraphs = text.split(/\n{2,}/);
+  const first = paragraphs[0]?.trim() ?? "";
+  if (/^\*?TL;?DR/i.test(first)) {
+    return { tldr: first, rest: paragraphs.slice(1).join("\n\n").trim() };
+  }
+  return { tldr: null, rest: text };
+}
+
+function asBlockquote(text: string): string {
+  return text
+    .split("\n")
+    .map((line) => `> ${line}`)
+    .join("\n");
+}
+
 function chunkText(text: string, maxChars: number): string[] {
   const paragraphs = text.split(/\n{2,}/);
   const chunks: string[] = [];
@@ -39,11 +55,17 @@ interface SlackBlock {
 
 function buildBlocks(digestText: string, dateLabel: string): SlackBlock[] {
   const blocks: SlackBlock[] = [
-    { type: "header", text: { type: "plain_text", text: `🗞️ AI & Tech Digest — ${dateLabel}`.slice(0, 150) } },
+    { type: "header", text: { type: "plain_text", text: `🗞️ AI & Tech Digest: ${dateLabel}`.slice(0, 150) } },
     { type: "divider" },
   ];
 
-  for (const chunk of chunkText(digestText, SLACK_SECTION_MAX_CHARS)) {
+  const { tldr, rest } = extractTldr(digestText);
+  if (tldr) {
+    blocks.push({ type: "section", text: { type: "mrkdwn", text: asBlockquote(`📌 ${tldr}`) } });
+    blocks.push({ type: "divider" });
+  }
+
+  for (const chunk of chunkText(rest, SLACK_SECTION_MAX_CHARS)) {
     blocks.push({ type: "section", text: { type: "mrkdwn", text: chunk } });
   }
 
@@ -58,7 +80,7 @@ export async function postToSlack(digestText: string, dateLabel: string): Promis
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      text: `AI & Tech Digest — ${dateLabel}`,
+      text: `AI & Tech Digest: ${dateLabel}`,
       blocks: buildBlocks(digestText, dateLabel),
     }),
     signal: AbortSignal.timeout(15_000),
